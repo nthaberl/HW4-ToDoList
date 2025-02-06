@@ -73,16 +73,81 @@ async function loadTodos() {
 
     const todos = await response.json();
     todoList.innerHTML = '';
+
     todos.forEach(todo => {
         const li = document.createElement('li');
+
         li.innerHTML = `
             <input type="checkbox" ${todo.completed ? 'checked' : ''} data-id="${todo.id}">
-            <span class="${todo.completed ? 'completed' : ''}"><strong>${todo.title}</strong> - ${todo.description}</span>
+            <span class="${todo.completed ? 'completed' : ''}">
+                <strong>${todo.title}</strong> - ${todo.description}
+            </span>
             <button data-id="${todo.id}">X</button>
         `;
+
+        // Add edit functionality on double-click
+        const span = li.querySelector('span');
+        span.addEventListener('dblclick', function () {
+            const id = todo.id;
+
+            // Extract current title and description
+            const [currentTitle, currentDescription] = span.textContent.split(" - ");
+
+            // Create input fields
+            const titleInput = document.createElement('input');
+            titleInput.type = 'text';
+            titleInput.value = currentTitle.trim();
+
+            const descInput = document.createElement('input');
+            descInput.type = 'text';
+            descInput.value = currentDescription.trim();
+
+            // Create a container for inputs
+            const inputContainer = document.createElement('div.edit');
+            inputContainer.appendChild(titleInput);
+            inputContainer.appendChild(descInput);
+
+            // Replace the span with input fields
+            span.replaceWith(inputContainer);
+            // titleInput.focus();
+
+            async function saveEdit() {
+                const newTitle = titleInput.value.trim();
+                const newDescription = descInput.value.trim();
+
+                if (!newTitle) {
+                    inputContainer.replaceWith(span);
+                    return;
+                }
+
+                await fetch(`${API_BASE}/todos/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ title: newTitle, description: newDescription })
+                });
+
+                // Update UI after saving
+                span.innerHTML = `<strong>${newTitle}</strong> - ${newDescription}`;
+                inputContainer.replaceWith(span);
+            }
+
+            // Save when focus is lost or Enter is pressed
+            titleInput.addEventListener('blur', saveEdit);
+            descInput.addEventListener('blur', saveEdit);
+
+            titleInput.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') saveEdit();
+            });
+
+            descInput.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') saveEdit();
+            });
+        });
+
         todoList.appendChild(li);
     });
 }
+
 
 async function addTodo(event) {
     event.preventDefault();

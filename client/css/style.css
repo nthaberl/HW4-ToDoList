@@ -47,13 +47,18 @@ input[type=text], input[type=password]{
 }
 
 #todo-form {
-    margin-bottom: 25px;
+    margin-bottom: 5px;
+}
+
+#todo-form p {
+    font-size: 80%;
 }
 
 button {
-    padding: 5px;
-    border-radius: 5px;
     border: none;
+    background-color: rgba(0, 0, 0, 0);
+    font-weight: bolder;
+    margin-left: 15px;
 }
 
 input {
@@ -75,4 +80,8 @@ ul {
 .completed {
     text-decoration: line-through;
     color: #cccccc;
+}
+
+.edit {
+    display: flex;
 }
